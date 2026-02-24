@@ -56,7 +56,7 @@ function setup() {
   const headers = [
     'id', 'titulo', 'descripcion', 'estado', 'checklist',
     'fechaCreacion', 'fechaActualizacion', 'fechaLimite',
-    'enviarEmail', 'emailDestino', 'prioridad', 'archivada', 'ownerEmail'
+    'enviarEmail', 'emailDestino', 'prioridad', 'archivada', 'ownerEmail', 'ultimoEstadoNotificado'
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -105,13 +105,14 @@ function createTask(payload) {
     payload.emailDestino || userEmail,
     payload.prioridad || 'Media',
     false,
-    userEmail
+    userEmail,
+    payload.enviarEmail ? payload.estado : ''
   ];
 
   sheet.appendRow(newTask);
 
   if (payload.enviarEmail) {
-    sendNotification(payload, 'Creada');
+    sendNotification(Object.assign({}, payload, { id }), 'Creada');
   }
 
   return { success: true, id };
@@ -143,10 +144,12 @@ function updateTask(payload) {
 
       sheet.getRange(i + 1, headers.indexOf('fechaActualizacion') + 1).setValue(now);
 
-      if (payload.enviarEmail === true) {
-        const fullTask = {};
-        headers.forEach((h, idx) => fullTask[h] = payload.hasOwnProperty(h) ? payload[h] : data[i][idx]);
+      const fullTask = {};
+      headers.forEach((h, idx) => fullTask[h] = payload.hasOwnProperty(h) ? payload[h] : data[i][idx]);
+
+      if (fullTask.enviarEmail === true && fullTask.estado !== fullTask.ultimoEstadoNotificado) {
         sendNotification(fullTask, 'Actualizada');
+        sheet.getRange(i + 1, headers.indexOf('ultimoEstadoNotificado') + 1).setValue(fullTask.estado);
       }
 
       return { success: true };
