@@ -1,88 +1,58 @@
-# TaskMaster Pro - Notas y Tareas
+# TaskMaster Pro - Versión Integrada (Google Apps Script)
 
-Una aplicación web profesional de gestión de tareas y notas con arquitectura limpia, diseño responsive y respaldada por **Google Sheets** como base de datos y **Gmail** para notificaciones.
+Esta versión de la aplicación se ejecuta **completamente dentro de Google Apps Script**, lo que facilita el despliegue y mejora la seguridad al no requerir servidores externos para el frontend.
 
-## 🚀 Características
+## 🚀 Instrucciones de Despliegue (Paso a Paso)
 
-- **Gestión Completa (CRUD):** Crea, edita, elimina y busca tareas.
-- **Checklists:** Cada tarea puede tener múltiples elementos de checklist.
-- **Estados:** Control de flujo (Pendiente, En desarrollo, Finalizada).
-- **Notificaciones por Email:** Opción para enviar alertas automáticas vía Gmail al crear o actualizar tareas.
-- **Diseño Responsive:** Optimizado para móviles (Mobile-first) y escritorio.
-- **Vistas Duales:** Vista de Lista y Vista Kanban.
-- **Filtros Avanzados:** Filtra por estado, prioridad y búsqueda en tiempo real.
-- **Seguridad:** Utiliza la infraestructura de Google para autenticación y almacenamiento.
-
-## 🛠️ Requisitos Técnicos
-
-- **Frontend:** HTML5, CSS3 (Tailwind CSS), JavaScript (Vanilla).
-- **Backend:** Google Apps Script (GAS) actuando como API REST.
-- **Base de Datos:** Google Sheets.
-- **Servicio de Correo:** Gmail API (vía GAS).
-
----
-
-## 📋 Instrucciones de Configuración y Despliegue
-
-Sigue estos pasos para poner en marcha tu propia instancia de TaskMaster Pro:
-
-### 1. Configurar la Hoja de Cálculo
+### 1. Preparar la Hoja de Cálculo
 1. Crea una nueva **Hoja de cálculo de Google**.
-2. Ponle un nombre (ej. `BD_Tareas`).
-3. No es necesario crear las columnas manualmente; el script lo hará por ti.
+2. Ve al menú superior: **Extensiones > Apps Script**.
 
-### 2. Configurar el Backend (Google Apps Script)
-1. En tu hoja de cálculo, ve al menú superior: **Extensiones > Apps Script**.
-2. Borra cualquier código existente y pega el contenido del archivo `backend/Code.gs`.
-3. **Para Uso Personal:** Si quieres que *nadie* más pueda usar tu app aunque descubran la URL, busca la línea `const AUTHORIZED_EMAIL = '';` y pon tu correo entre las comillas.
-4. Haz clic en el icono de guardar (💾) y dale un nombre al proyecto (ej. `API_Tareas`).
-5. Selecciona la función `setup` en la barra de herramientas y haz clic en **Ejecutar**. Esto creará las cabeceras necesarias en tu hoja de cálculo.
-6. Autoriza los permisos necesarios cuando se te solicite (es seguro, ya que es tu propio script).
+### 2. Copiar los Archivos al Editor de Apps Script
+En el editor de Apps Script, debes crear 4 archivos con los nombres exactos:
 
-### 3. Desplegar como Aplicación Web
+1.  **Code.gs**:
+    - Si ya existe un archivo `Código.gs`, cámbiale el nombre a `Code.gs` o borra su contenido.
+    - Pega el contenido de `gas/Code.gs`.
+2.  **index.html**:
+    - Haz clic en el símbolo **+** junto a "Archivos" y selecciona **HTML**.
+    - Ponle de nombre `index` (Google añadirá .html).
+    - Pega el contenido de `gas/index.html`.
+3.  **styles.html**:
+    - Crea otro archivo HTML llamado `styles`.
+    - Pega el contenido de `gas/styles.html`.
+4.  **javascript.html**:
+    - Crea otro archivo HTML llamado `javascript`.
+    - Pega el contenido de `gas/javascript.html`.
+
+### 3. Configuración Inicial y Privacidad
+1. En `Code.gs`, localiza la línea `const AUTHORIZED_EMAIL = '';`.
+2. **Recomendado:** Pon tu correo electrónico entre las comillas para que solo tú puedas acceder.
+3. En la barra de herramientas, selecciona la función `setup` y haz clic en **Ejecutar**. Esto preparará las columnas de la hoja de cálculo.
+4. Otorga los permisos necesarios cuando se te soliciten.
+
+### 4. Publicar la Aplicación
 1. Haz clic en el botón azul **Desplegar > Nueva implementación**.
-2. Tipo de implementación: **Aplicación web**.
+2. Selecciona el tipo: **Aplicación web**.
 3. Configuración:
-   - **Descripción:** API TaskMaster.
+   - **Descripción:** TaskMaster UI.
    - **Ejecutar como:** El usuario que accede a la aplicación web.
-   - **Quién tiene acceso:** Cualquier persona con una cuenta de Google (Nota: el script verificará tu email si configuraste el paso anterior).
-4. Haz clic en **Desplegar**.
-5. **IMPORTANTE:** Copia la **URL de la aplicación web** generada.
-
-### 4. Configurar el Frontend
-1. Abre el archivo `frontend/app.js`.
-2. Localiza la variable `API_URL` al principio del archivo.
-3. Reemplaza `'TU_URL_DE_WEB_APP_AQUI'` por la URL que copiaste en el paso anterior.
-4. Guarda el archivo.
-
-### 5. Despliegue del Frontend
-Puedes abrir el archivo `frontend/index.html` directamente en tu navegador para usarlo localmente, o subir la carpeta `frontend` a cualquier servicio de hosting estático (Netlify, Vercel, GitHub Pages, etc.).
+   - **Quién tiene acceso:** Cualquier persona con una cuenta de Google.
+4. Haz clic en **Desplegar** y copia la **URL de la aplicación web**.
 
 ---
 
-## 📖 Guía de Uso
+## 💡 Ventajas de esta Versión
+- **Sin CORS:** Al estar todo en el mismo dominio, no hay problemas de conexión.
+- **Velocidad:** La comunicación vía `google.script.run` es nativa y más eficiente.
+- **Privacidad Total:** Los datos y la interfaz viven exclusivamente en tu cuenta de Google.
+- **Mantenimiento:** Solo necesitas gestionar un proyecto de Apps Script.
 
-- **Crear Tarea:** Haz clic en "Nueva Tarea", rellena los campos y guarda.
-- **Activar Notificaciones:** Marca "Notificar por email" al crear o editar si quieres recibir un correo con los detalles.
-- **Checklist:** Añade items en el modal. Al marcar todos como completados, la app te sugerirá marcar la tarea como "Finalizada".
-- **Vistas:** Cambia entre la vista de lista clásica y el tablero Kanban usando los iconos de la parte superior derecha.
-- **Búsqueda:** Escribe en el buscador para filtrar instantáneamente por título o descripción.
-
-## 🏗️ Estructura del Proyecto
-
+## 🏗️ Estructura en Apps Script
 ```text
-notes-tasks-app/
-├── backend/
-│   └── Code.gs        # Código para Google Apps Script
-├── frontend/
-│   ├── index.html     # Estructura principal
-│   ├── styles.css     # Estilos y personalizaciones
-│   └── app.js         # Lógica de cliente e integración API
-└── README.md          # Esta documentación
+Proyecto GAS/
+├── Code.gs          # Lógica de servidor y rutas
+├── index.html       # Estructura base de la interfaz
+├── styles.html      # Estilos CSS y Tailwind
+└── javascript.html  # Lógica del cliente (JS)
 ```
-
-## 🔒 Seguridad y Privacidad
-
-- Los datos se almacenan exclusivamente en **tu** Google Drive.
-- El script utiliza `Session.getActiveUser().getEmail()` para asegurar que, aunque la API sea accesible, los datos mostrados se filtren por el usuario que ha iniciado sesión en Google (si se configura así el acceso).
-- No compartas la URL de tu Web App públicamente si quieres mantener la privacidad absoluta.

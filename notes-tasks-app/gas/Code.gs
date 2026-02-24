@@ -1,29 +1,50 @@
 /**
- * Backend para Aplicación de Notas y Tareas con Google Sheets y Gmail
+ * TaskMaster Pro - Versión Integrada en Google Apps Script
  *
- * Configuración:
- * 1. Crea una Hoja de Cálculo de Google.
- * 2. Ve a Extensiones > Apps Script.
- * 3. Pega este código.
- * 4. Ejecuta la función 'setup' una vez.
- * 5. Despliega como "Aplicación web".
- * 6. Configura "Quién tiene acceso" como "Cualquier persona" o "Cualquier persona con una cuenta de Google".
+ * Este archivo contiene la lógica del servidor (Backend).
  */
 
 const SHEET_NAME = 'Tareas';
-const AUTHORIZED_EMAIL = ''; // OPCIONAL: Escribe tu email aquí (ej: 'tu@email.com') para restringir el acceso solo a ti.
+const AUTHORIZED_EMAIL = ''; // OPCIONAL: Escribe tu email aquí para restringir el acceso.
 
 /**
- * Verifica si el usuario tiene permiso para acceder.
+ * Sirve la interfaz de usuario.
  */
-function checkAccess(userEmail) {
+function doGet() {
+  const userEmail = Session.getActiveUser().getEmail();
+
+  // Verificación de acceso para el renderizado inicial
   if (AUTHORIZED_EMAIL && userEmail !== AUTHORIZED_EMAIL) {
-    throw new Error('Acceso denegado: Esta aplicación está configurada para uso personal de ' + AUTHORIZED_EMAIL);
+    return HtmlService.createHtmlOutput('Acceso denegado: Esta aplicación es privada.');
   }
+
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('TaskMaster Pro')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /**
- * Inicializa la hoja de cálculo con las columnas necesarias.
+ * Helper para incluir archivos HTML (CSS/JS) en el index.
+ */
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+/**
+ * Verifica si el usuario tiene permiso.
+ */
+function checkAccess() {
+  const userEmail = Session.getActiveUser().getEmail();
+  if (AUTHORIZED_EMAIL && userEmail !== AUTHORIZED_EMAIL) {
+    throw new Error('No tienes permiso para realizar esta acción.');
+  }
+  return userEmail;
+}
+
+/**
+ * Inicializa la hoja.
  */
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -40,65 +61,13 @@ function setup() {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   sheet.setFrozenRows(1);
-
-  // Aplicar formato a la cabecera
-  sheet.getRange(1, 1, 1, headers.length)
-    .setBackground('#4a86e8')
-    .setFontColor('#ffffff')
-    .setFontWeight('bold');
 }
 
 /**
- * Maneja las peticiones GET (Lectura de datos).
- */
-function doGet(e) {
-  try {
-    const userEmail = Session.getActiveUser().getEmail();
-    checkAccess(userEmail);
-    const tasks = getTasks();
-    return createJsonResponse({ success: true, data: tasks });
-  } catch (error) {
-    return createJsonResponse({ success: false, error: error.toString() }, 403);
-  }
-}
-
-/**
- * Maneja las peticiones POST (Creación, Actualización, Eliminación).
- */
-function doPost(e) {
-  try {
-    const userEmail = Session.getActiveUser().getEmail();
-    checkAccess(userEmail);
-
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
-    const payload = body.payload;
-
-    let result;
-    switch (action) {
-      case 'create':
-        result = createTask(payload, userEmail);
-        break;
-      case 'update':
-        result = updateTask(payload, userEmail);
-        break;
-      case 'delete':
-        result = deleteTask(payload.id, userEmail);
-        break;
-      default:
-        throw new Error('Acción no permitida');
-    }
-
-    return createJsonResponse({ success: true, data: result });
-  } catch (error) {
-    return createJsonResponse({ success: false, error: error.toString() }, 400);
-  }
-}
-
-/**
- * Obtiene todas las tareas del usuario actual.
+ * Obtiene todas las tareas.
  */
 function getTasks() {
+  checkAccess();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -111,13 +80,14 @@ function getTasks() {
       task[header] = row[index];
     });
     return task;
-  }).filter(task => task.ownerEmail === userEmail || !task.ownerEmail); // Filtro simple por usuario
+  }).filter(task => task.ownerEmail === userEmail);
 }
 
 /**
- * Crea una nueva tarea.
+ * Crea una tarea.
  */
-function createTask(payload, userEmail) {
+function createTask(payload) {
+  const userEmail = checkAccess();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const id = Utilities.getUuid();
   const now = new Date().toISOString();
@@ -134,7 +104,7 @@ function createTask(payload, userEmail) {
     payload.enviarEmail || false,
     payload.emailDestino || userEmail,
     payload.prioridad || 'Media',
-    false, // archivada
+    false,
     userEmail
   ];
 
@@ -144,13 +114,14 @@ function createTask(payload, userEmail) {
     sendNotification(payload, 'Creada');
   }
 
-  return { id, ...payload };
+  return { success: true, id };
 }
 
 /**
- * Actualiza una tarea existente.
+ * Actualiza una tarea.
  */
-function updateTask(payload, userEmail) {
+function updateTask(payload) {
+  const userEmail = checkAccess();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -159,56 +130,54 @@ function updateTask(payload, userEmail) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === payload.id) {
-      // Verificar permiso (opcional pero recomendado)
       const ownerEmailIndex = headers.indexOf('ownerEmail');
-      if (data[i][ownerEmailIndex] && data[i][ownerEmailIndex] !== userEmail) {
-        throw new Error('No tienes permiso para editar esta tarea');
+      if (data[i][ownerEmailIndex] !== userEmail) {
+        throw new Error('No tienes permiso');
       }
 
-      // Actualizar campos
       headers.forEach((header, colIndex) => {
         if (payload.hasOwnProperty(header)) {
           sheet.getRange(i + 1, colIndex + 1).setValue(payload[header]);
         }
       });
 
-      // Actualizar fecha de actualización
       sheet.getRange(i + 1, headers.indexOf('fechaActualizacion') + 1).setValue(now);
 
-      // Enviar notificación solo si el flag 'enviarEmail' está activo en esta actualización
       if (payload.enviarEmail === true) {
-        // Obtenemos la tarea completa para el email
         const fullTask = {};
         headers.forEach((h, idx) => fullTask[h] = payload.hasOwnProperty(h) ? payload[h] : data[i][idx]);
         sendNotification(fullTask, 'Actualizada');
       }
 
-      return payload;
+      return { success: true };
     }
   }
-  throw new Error('Tarea no encontrada');
+  throw new Error('No encontrada');
 }
 
 /**
  * Elimina una tarea.
  */
-function deleteTask(id, userEmail) {
+function deleteTask(id) {
+  const userEmail = checkAccess();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const idIndex = headers.indexOf('id');
+  const idIndex = data[0].indexOf('id');
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === id) {
+      if (data[i][data[0].indexOf('ownerEmail')] !== userEmail) {
+        throw new Error('No tienes permiso');
+      }
       sheet.deleteRow(i + 1);
-      return { id };
+      return { success: true };
     }
   }
-  throw new Error('Tarea no encontrada');
+  throw new Error('No encontrada');
 }
 
 /**
- * Envía una notificación por Gmail.
+ * Notificación por Gmail.
  */
 function sendNotification(task, evento) {
   const email = task.emailDestino || Session.getActiveUser().getEmail();
@@ -234,21 +203,9 @@ function sendNotification(task, evento) {
       <p><strong>Fecha Límite:</strong> ${task.fechaLimite || 'No establecida'}</p>
       ${checklistHtml}
       <hr>
-      <p style="font-size: 0.8em; color: #666;">Enviado automáticamente desde tu App de Notas.</p>
+      <p style="font-size: 0.8em; color: #666;">Enviado desde TaskMaster Pro.</p>
     </div>
   `;
 
-  MailApp.sendEmail({
-    to: email,
-    subject: subject,
-    htmlBody: body
-  });
-}
-
-/**
- * Helper para crear respuestas JSON.
- */
-function createJsonResponse(data, statusCode = 200) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+  MailApp.sendEmail({ to: email, subject: subject, htmlBody: body });
 }
