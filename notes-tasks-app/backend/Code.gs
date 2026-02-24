@@ -11,6 +11,16 @@
  */
 
 const SHEET_NAME = 'Tareas';
+const AUTHORIZED_EMAIL = ''; // OPCIONAL: Escribe tu email aquí (ej: 'tu@email.com') para restringir el acceso solo a ti.
+
+/**
+ * Verifica si el usuario tiene permiso para acceder.
+ */
+function checkAccess(userEmail) {
+  if (AUTHORIZED_EMAIL && userEmail !== AUTHORIZED_EMAIL) {
+    throw new Error('Acceso denegado: Esta aplicación está configurada para uso personal de ' + AUTHORIZED_EMAIL);
+  }
+}
 
 /**
  * Inicializa la hoja de cálculo con las columnas necesarias.
@@ -43,10 +53,12 @@ function setup() {
  */
 function doGet(e) {
   try {
+    const userEmail = Session.getActiveUser().getEmail();
+    checkAccess(userEmail);
     const tasks = getTasks();
     return createJsonResponse({ success: true, data: tasks });
   } catch (error) {
-    return createJsonResponse({ success: false, error: error.toString() }, 500);
+    return createJsonResponse({ success: false, error: error.toString() }, 403);
   }
 }
 
@@ -55,10 +67,12 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
+    const userEmail = Session.getActiveUser().getEmail();
+    checkAccess(userEmail);
+
     const body = JSON.parse(e.postData.contents);
     const action = body.action;
     const payload = body.payload;
-    const userEmail = Session.getActiveUser().getEmail();
 
     let result;
     switch (action) {

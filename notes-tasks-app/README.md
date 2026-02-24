@@ -34,17 +34,18 @@ Sigue estos pasos para poner en marcha tu propia instancia de TaskMaster Pro:
 ### 2. Configurar el Backend (Google Apps Script)
 1. En tu hoja de cálculo, ve al menú superior: **Extensiones > Apps Script**.
 2. Borra cualquier código existente y pega el contenido del archivo `backend/Code.gs`.
-3. Haz clic en el icono de guardar (💾) y dale un nombre al proyecto (ej. `API_Tareas`).
-4. Selecciona la función `setup` en la barra de herramientas y haz clic en **Ejecutar**. Esto creará las cabeceras necesarias en tu hoja de cálculo.
-5. Autoriza los permisos necesarios cuando se te solicite (es seguro, ya que es tu propio script).
+3. **Para Uso Personal:** Si quieres que *nadie* más pueda usar tu app aunque descubran la URL, busca la línea `const AUTHORIZED_EMAIL = '';` y pon tu correo entre las comillas.
+4. Haz clic en el icono de guardar (💾) y dale un nombre al proyecto (ej. `API_Tareas`).
+5. Selecciona la función `setup` en la barra de herramientas y haz clic en **Ejecutar**. Esto creará las cabeceras necesarias en tu hoja de cálculo.
+6. Autoriza los permisos necesarios cuando se te solicite (es seguro, ya que es tu propio script).
 
 ### 3. Desplegar como Aplicación Web
 1. Haz clic en el botón azul **Desplegar > Nueva implementación**.
 2. Tipo de implementación: **Aplicación web**.
 3. Configuración:
    - **Descripción:** API TaskMaster.
-   - **Ejecutar como:** El usuario que accede a la aplicación web (Esto asegura que cada usuario vea sus propias tareas y use su propia cuenta de Gmail para enviar correos).
-   - **Quién tiene acceso:** Cualquier persona con una cuenta de Google.
+   - **Ejecutar como:** El usuario que accede a la aplicación web.
+   - **Quién tiene acceso:** Cualquier persona con una cuenta de Google (Nota: el script verificará tu email si configuraste el paso anterior).
 4. Haz clic en **Desplegar**.
 5. **IMPORTANTE:** Copia la **URL de la aplicación web** generada.
 
