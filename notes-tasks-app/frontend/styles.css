@@ -1,0 +1,59 @@
+/* Estilos personalizados */
+
+.task-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.completed-task .task-title {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.priority-Alta { border-left: 4px solid #ef4444; }
+.priority-Media { border-left: 4px solid #f59e0b; }
+.priority-Baja { border-left: 4px solid #10b981; }
+
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c7d2fe;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #818cf8;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.kanban-column {
+    min-height: 500px;
+    background: #f3f4f6;
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.kanban-tasks {
+    min-height: 200px;
+}
