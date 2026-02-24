@@ -171,8 +171,8 @@ function createTaskCard(task) {
     }
 
     return `
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 task-card ${priorityClass} ${isCompleted ? 'completed-task opacity-75' : ''} animate-fade-in transition-colors">
-            <div class="flex justify-between items-start mb-2">
+        <div class="rounded-2xl p-5 border border-gray-100 dark:border-gray-700 task-card ${priorityClass} ${isCompleted ? 'completed-task opacity-75' : ''} animate-fade-in transition-colors">
+            <div class="flex justify-between items-start mb-3">
                 <span class="px-2 py-1 rounded-full text-xs font-bold ${statusClass}">${escapeHTML(task.estado)}</span>
                 <div class="flex gap-2">
                     <button onclick="editTask('${task.id}')" class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
