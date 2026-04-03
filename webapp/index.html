@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Visitas a Centros - CEP Córdoba</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a5276, #2e86c1);
+            color: white; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header h1 { font-size: 1.3em; }
+        .header-subtitle { font-size: 0.8em; opacity: 0.85; }
+
+        /* Navigation */
+        .nav { display: flex; gap: 8px; }
+        .nav button {
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+            font-size: 0.9em; transition: all 0.2s;
+        }
+        .nav button:hover, .nav button.active { background: rgba(255,255,255,0.3); }
+
+        /* Main content */
+        .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
+        .card {
+            background: white; border-radius: 12px; padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;
+        }
+        .card h2 { color: #1a5276; margin-bottom: 16px; font-size: 1.2em; border-bottom: 2px solid #2e86c1; padding-bottom: 8px; }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #1a5276; font-size: 0.9em; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 0.95em; transition: border 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #2e86c1; box-shadow: 0 0 0 3px rgba(46,134,193,0.15);
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+
+        /* Checkbox group for actuaciones */
+        .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+        .checkbox-group label { font-weight: normal; display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+        .checkbox-group input[type="checkbox"] { width: auto; margin-top: 3px; accent-color: #2e86c1; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 0.95em; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-primary { background: #2e86c1; color: white; }
+        .btn-primary:hover { background: #1a6da3; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #1e8449; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-ai { background: linear-gradient(135deg, #8e44ad, #3498db); color: white; }
+        .btn-ai:hover { background: linear-gradient(135deg, #7d3c98, #2e86c1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+        /* AI Section */
+        .ai-section {
+            background: linear-gradient(135deg, #f8f0ff, #e8f4fd);
+            border: 2px dashed #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 20px;
+        }
+        .ai-section h3 { color: #8e44ad; margin-bottom: 12px; }
+        .ai-methods { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .ai-method {
+            flex: 1; min-width: 250px; background: white; border-radius: 10px;
+            padding: 16px; border: 1px solid #e0d4f0; cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .ai-method:hover { border-color: #8e44ad; box-shadow: 0 4px 12px rgba(142,68,173,0.15); }
+        .ai-method .icon { font-size: 2em; margin-bottom: 8px; }
+        .ai-method h4 { color: #8e44ad; margin-bottom: 4px; }
+        .ai-method p { font-size: 0.8em; color: #666; }
+
+        /* File input */
+        .file-input-wrapper { position: relative; }
+        .file-input-wrapper input[type="file"] { display: none; }
+        .file-label {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 30px; border: 2px dashed #8e44ad; border-radius: 10px;
+            cursor: pointer; color: #8e44ad; font-weight: 600; transition: all 0.2s;
+        }
+        .file-label:hover { background: rgba(142,68,173,0.05); }
+
+        /* Preview */
+        .preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; margin: 10px 0; }
+
+        /* Table */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a5276; color: white; padding: 10px; text-align: left; font-size: 0.85em; }
+        td { padding: 10px; border-bottom: 1px solid #e5e7eb; font-size: 0.85em; }
+        tr:hover { background: #f0f7ff; }
+        .table-actions { display: flex; gap: 6px; }
+        .table-actions button { padding: 5px 10px; font-size: 0.8em; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 14px 24px;
+            border-radius: 10px; color: white; font-weight: 600; z-index: 1000;
+            animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+        .toast.info { background: #2e86c1; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #999; }
+        .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid #e5e7eb; border-top-color: #2e86c1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Config */
+        .config-section { background: #fff9e6; border: 1px solid #f0d060; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+        .config-section h3 { color: #8a6d00; margin-bottom: 8px; }
+        .config-section input { margin-bottom: 8px; }
+        .config-section .hint { font-size: 0.8em; color: #999; margin-top: 4px; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .nav { justify-content: center; }
+            .ai-methods { flex-direction: column; }
+            .btn-group { flex-direction: column; }
+        }
+
+        .hidden { display: none !important; }
+
+        /* Text area for AI */
+        .ai-textarea {
+            width: 100%; min-height: 120px; padding: 12px; border: 1px solid #d1d5db;
+            border-radius: 8px; font-size: 0.95em; margin-bottom: 12px; resize: vertical;
+        }
+
+        /* Progress */
+        .progress-bar { width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #8e44ad, #3498db); transition: width 0.3s; border-radius: 3px; }
+
+        /* Search */
+        .search-box { margin-bottom: 16px; }
+        .search-box input { padding: 10px 16px; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>Visitas a Centros</h1>
+        <div class="header-subtitle">CEP Córdoba - Asesor/a de Formación</div>
+    </div>
+    <div class="nav">
+        <button id="nav-nueva" class="active" onclick="mostrarSeccion('nueva')">Nueva Visita</button>
+        <button id="nav-listado" onclick="mostrarSeccion('listado')">Listado</button>
+        <button id="nav-config" onclick="mostrarSeccion('config')">Ajustes</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- SECCIÓN CONFIGURACIÓN -->
+    <div id="seccion-config" class="hidden">
+        <div class="card">
+            <h2>Configuración</h2>
+            <div class="config-section">
+                <h3>Conexión con Google Sheets</h3>
+                <div class="form-group">
+                    <label>URL de Google Apps Script</label>
+                    <input type="url" id="cfg-apps-script-url" placeholder="https://script.google.com/macros/s/.../exec">
+                    <div class="hint">Despliega el archivo Code.gs como aplicación web y pega aquí la URL</div>
+                </div>
+            </div>
+            <div class="config-section">
+                <h3>IA - Autocompletado (Gemini - Gratuito)</h3>
+                <div class="form-group">
+                    <label>API Key de Google Gemini</label>
+                    <input type="password" id="cfg-gemini-key" placeholder="AIzaSy...">
+                    <div class="hint">Obtén una clave gratuita en <b>aistudio.google.com/apikey</b></div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="guardarConfig()">Guardar Configuración</button>
+                <button class="btn btn-secondary" onclick="testConexion()">Probar Conexión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN NUEVA VISITA -->
+    <div id="seccion-nueva">
+
+        <!-- AI Autocomplete -->
+        <div class="ai-section">
+            <h3>Autocompletado Inteligente</h3>
+            <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Rellena el formulario automáticamente a partir de una foto de tus notas o un texto resumen.</p>
+            <div class="ai-methods">
+                <div class="ai-method" onclick="toggleAIMethod('foto')">
+                    <div class="icon">&#128247;</div>
+                    <h4>Foto de Notas</h4>
+                    <p>Haz una foto a tus notas manuscritas</p>
+                </div>
+                <div class="ai-method" onclick="toggleAIMethod('texto')">
+                    <div class="icon">&#128221;</div>
+                    <h4>Texto Resumen</h4>
+                    <p>Escribe o pega un resumen de la visita</p>
+                </div>
+            </div>
+
+            <!-- Foto input -->
+            <div id="ai-foto" class="hidden">
+                <div class="file-input-wrapper">
+                    <input type="file" id="foto-input" accept="image/*" capture="environment" onchange="previewFoto(this)">
+                    <label for="foto-input" class="file-label">
+                        &#128247; Toca para hacer una foto o seleccionar imagen
+                    </label>
+                </div>
+                <img id="foto-preview" class="preview-img hidden">
+                <div id="ocr-progress" class="hidden">
+                    <div class="progress-bar"><div class="progress-fill" id="ocr-progress-fill" style="width:0%"></div></div>
+                    <small id="ocr-status">Procesando imagen...</small>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-ai" onclick="procesarFoto()" id="btn-procesar-foto" disabled>Procesar con IA</button>
+                    <button class="btn btn-secondary" onclick="cancelarAI('foto')">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Texto input -->
+            <div id="ai-texto" class="hidden">
+                <textarea class="ai-textarea" id="texto-resumen" placeholder="Escribe un resumen de la visita. Ejemplo:&#10;&#10;Hoy 15 de marzo visité el CEIP La Aduana para hacer seguimiento del plan de formación. Me reuní con la directora María López y el jefe de estudios Juan García. Hablamos sobre el avance del proyecto de innovación educativa y las necesidades de formación en competencia digital. Se acordó programar una jornada de formación para mayo."></textarea>
+                <div class="btn-group">
+                    <button class="btn btn-ai" onclick="procesarTexto()">Completar con IA</button>
+                    <button class="btn btn-secondary" onclick="cancelarAI('texto')">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="card">
+            <h2 id="form-titulo">Nueva Visita al Centro</h2>
+            <input type="hidden" id="visita-id">
+
+            <div class="form-group">
+                <label>Fecha de la visita</label>
+                <input type="date" id="campo-fecha">
+            </div>
+
+            <div class="form-group">
+                <label>Centro</label>
+                <select id="campo-centro" onchange="onCentroChange()">
+                    <option value="">-- Selecciona un centro --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Breve reseña de la visita</label>
+                <textarea id="campo-resena" placeholder="Describe brevemente la visita..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Actuaciones realizadas durante la visita</label>
+                <div class="checkbox-group" id="campo-actuaciones">
+                    <label><input type="checkbox" value="Asesoramiento sobre autoevaluación y Plan de Mejora"> Asesoramiento sobre autoevaluación y Plan de Mejora</label>
+                    <label><input type="checkbox" value="Elaboración del plan de formación"> Elaboración del plan de formación</label>
+                    <label><input type="checkbox" value="Detección de necesidades formativas"> Detección de necesidades formativas</label>
+                    <label><input type="checkbox" value="Seguimiento del plan de formación"> Seguimiento del plan de formación</label>
+                    <label><input type="checkbox" value="Evaluación del plan de formación"> Evaluación del plan de formación</label>
+                    <label><input type="checkbox" value="Participación en el claustro y/o ETCP"> Participación en el claustro y/o ETCP</label>
+                    <label><input type="checkbox" value="Seguimiento de las actividades de autoformación y/o Programas Educativos"> Seguimiento de las actividades de autoformación y/o Programas Educativos</label>
+                    <label><input type="checkbox" value="Otros"> Otros</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Motivos de la visita</label>
+                <textarea id="campo-motivos" placeholder="Motivos de la visita..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Participantes</label>
+                <textarea id="campo-participantes" placeholder="Personas que participaron en la visita..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Asuntos tratados en la visita</label>
+                <textarea id="campo-asuntos" placeholder="Asuntos que se trataron..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Acuerdos alcanzados en la visita</label>
+                <textarea id="campo-acuerdos" placeholder="Acuerdos a los que se llegó..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="guardarVisita()">Guardar Visita</button>
+                <button class="btn btn-secondary" onclick="limpiarFormulario()">Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN LISTADO -->
+    <div id="seccion-listado" class="hidden">
+        <div class="card">
+            <h2>Visitas Registradas</h2>
+            <div class="search-box">
+                <input type="text" id="buscar-visita" placeholder="Buscar por centro, fecha..." oninput="filtrarVisitas()">
+            </div>
+            <div id="tabla-visitas">
+                <div class="loading"><div class="spinner"></div><p>Cargando visitas...</p></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Tesseract.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+// ==================== CONFIGURACIÓN ====================
+let CONFIG = {
+    appsScriptUrl: '',
+    geminiKey: ''
+};
+let centros = [];
+let visitas = [];
+let editandoId = null;
+
+// Cargar config al inicio
+function cargarConfig() {
+    const saved = localStorage.getItem('visitasCEP_config');
+    if (saved) {
+        CONFIG = JSON.parse(saved);
+        document.getElementById('cfg-apps-script-url').value = CONFIG.appsScriptUrl || '';
+        document.getElementById('cfg-gemini-key').value = CONFIG.geminiKey || '';
+    }
+    // Set fecha de hoy
+    document.getElementById('campo-fecha').value = new Date().toISOString().split('T')[0];
+
+    if (CONFIG.appsScriptUrl) {
+        cargarCentros();
+    } else {
+        mostrarSeccion('config');
+        toast('Configura la URL de Apps Script para comenzar', 'info');
+    }
+}
+
+function guardarConfig() {
+    CONFIG.appsScriptUrl = document.getElementById('cfg-apps-script-url').value.trim();
+    CONFIG.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
+    localStorage.setItem('visitasCEP_config', JSON.stringify(CONFIG));
+    toast('Configuración guardada', 'success');
+    if (CONFIG.appsScriptUrl) cargarCentros();
+}
+
+async function testConexion() {
+    if (!CONFIG.appsScriptUrl) { toast('Introduce la URL primero', 'error'); return; }
+    try {
+        toast('Probando conexión...', 'info');
+        const resp = await fetch(CONFIG.appsScriptUrl + '?action=getCentros');
+        const data = await resp.json();
+        if (data.success) {
+            toast('Conexión OK - ' + data.centros.length + ' centros encontrados', 'success');
+        } else {
+            toast('Error: ' + (data.error || 'Respuesta inesperada'), 'error');
+        }
+    } catch (e) {
+        toast('Error de conexión: ' + e.message, 'error');
+    }
+}
+
+// ==================== CENTROS ====================
+async function cargarCentros() {
+    try {
+        const resp = await fetch(CONFIG.appsScriptUrl + '?action=getCentros');
+        const data = await resp.json();
+        if (data.success) {
+            centros = data.centros;
+            const select = document.getElementById('campo-centro');
+            select.innerHTML = '<option value="">-- Selecciona un centro --</option>';
+            centros.forEach(c => {
+                select.innerHTML += `<option value="${c.codigo}">${c.codigo} - ${c.denominacion} (${c.localidad})</option>`;
+            });
+        }
+    } catch (e) {
+        console.error('Error cargando centros:', e);
+    }
+}
+
+function onCentroChange() {}
+
+// ==================== VISITAS CRUD ====================
+async function guardarVisita() {
+    if (!CONFIG.appsScriptUrl) { toast('Configura la URL de Apps Script primero', 'error'); return; }
+
+    const fecha = document.getElementById('campo-fecha').value;
+    const codigoCentro = document.getElementById('campo-centro').value;
+
+    if (!fecha || !codigoCentro) {
+        toast('Fecha y Centro son obligatorios', 'error');
+        return;
+    }
+
+    const centro = centros.find(c => c.codigo === codigoCentro);
+    const actuaciones = [];
+    document.querySelectorAll('#campo-actuaciones input:checked').forEach(cb => actuaciones.push(cb.value));
+
+    const visita = {
+        fecha: fecha,
+        codigoCentro: codigoCentro,
+        centro: centro ? centro.denominacion : '',
+        resena: document.getElementById('campo-resena').value,
+        actuaciones: actuaciones,
+        motivos: document.getElementById('campo-motivos').value,
+        participantes: document.getElementById('campo-participantes').value,
+        asuntosTratados: document.getElementById('campo-asuntos').value,
+        acuerdos: document.getElementById('campo-acuerdos').value
+    };
+
+    try {
+        const action = editandoId ? 'actualizarVisita' : 'guardarVisita';
+        const body = editandoId
+            ? { action: action, id: editandoId, visita: visita }
+            : { action: action, visita: visita };
+
+        const resp = await fetch(CONFIG.appsScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            toast(data.message, 'success');
+            limpiarFormulario();
+        } else {
+            toast('Error: ' + data.error, 'error');
+        }
+    } catch (e) {
+        toast('Error al guardar: ' + e.message, 'error');
+    }
+}
+
+async function cargarVisitas() {
+    if (!CONFIG.appsScriptUrl) return;
+    document.getElementById('tabla-visitas').innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando visitas...</p></div>';
+
+    try {
+        const resp = await fetch(CONFIG.appsScriptUrl + '?action=getVisitas');
+        const data = await resp.json();
+        if (data.success) {
+            visitas = data.visitas;
+            renderTabla(visitas);
+        } else {
+            document.getElementById('tabla-visitas').innerHTML = '<p>Error: ' + data.error + '</p>';
+        }
+    } catch (e) {
+        document.getElementById('tabla-visitas').innerHTML = '<p>Error de conexión</p>';
+    }
+}
+
+function renderTabla(lista) {
+    if (lista.length === 0) {
+        document.getElementById('tabla-visitas').innerHTML = '<p style="text-align:center;color:#999;padding:20px;">No hay visitas registradas</p>';
+        return;
+    }
+
+    let html = '<div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Centro</th><th>Motivos</th><th>Acciones</th></tr></thead><tbody>';
+    lista.forEach(v => {
+        const fechaDisplay = v.fecha || '';
+        html += `<tr>
+            <td>${fechaDisplay}</td>
+            <td>${v.centro || v.codigoCentro}</td>
+            <td>${(v.motivos || '').substring(0, 60)}${(v.motivos || '').length > 60 ? '...' : ''}</td>
+            <td class="table-actions">
+                <button class="btn btn-primary" style="padding:4px 8px;font-size:0.75em" onclick="editarVisita('${v.id}')">Editar</button>
+                <button class="btn btn-danger" style="padding:4px 8px;font-size:0.75em" onclick="eliminarVisita('${v.id}')">Eliminar</button>
+            </td>
+        </tr>`;
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('tabla-visitas').innerHTML = html;
+}
+
+function filtrarVisitas() {
+    const q = document.getElementById('buscar-visita').value.toLowerCase();
+    const filtradas = visitas.filter(v =>
+        (v.centro || '').toLowerCase().includes(q) ||
+        (v.fecha || '').includes(q) ||
+        (v.motivos || '').toLowerCase().includes(q) ||
+        (v.codigoCentro || '').includes(q)
+    );
+    renderTabla(filtradas);
+}
+
+async function editarVisita(id) {
+    const v = visitas.find(x => x.id === id);
+    if (!v) return;
+
+    editandoId = id;
+    document.getElementById('form-titulo').textContent = 'Editar Visita';
+    document.getElementById('campo-fecha').value = v.fecha;
+    document.getElementById('campo-centro').value = v.codigoCentro;
+    document.getElementById('campo-resena').value = v.resena || '';
+    document.getElementById('campo-motivos').value = v.motivos || '';
+    document.getElementById('campo-participantes').value = v.participantes || '';
+    document.getElementById('campo-asuntos').value = v.asuntosTratados || '';
+    document.getElementById('campo-acuerdos').value = v.acuerdos || '';
+
+    // Actuaciones checkboxes
+    document.querySelectorAll('#campo-actuaciones input').forEach(cb => {
+        cb.checked = (v.actuaciones || []).includes(cb.value);
+    });
+
+    mostrarSeccion('nueva');
+}
+
+async function eliminarVisita(id) {
+    if (!confirm('¿Seguro que quieres eliminar esta visita?')) return;
+    try {
+        const resp = await fetch(CONFIG.appsScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'eliminarVisita', id: id })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            toast('Visita eliminada', 'success');
+            cargarVisitas();
+        } else {
+            toast('Error: ' + data.error, 'error');
+        }
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
+    }
+}
+
+function limpiarFormulario() {
+    editandoId = null;
+    document.getElementById('form-titulo').textContent = 'Nueva Visita al Centro';
+    document.getElementById('campo-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('campo-centro').value = '';
+    document.getElementById('campo-resena').value = '';
+    document.getElementById('campo-motivos').value = '';
+    document.getElementById('campo-participantes').value = '';
+    document.getElementById('campo-asuntos').value = '';
+    document.getElementById('campo-acuerdos').value = '';
+    document.querySelectorAll('#campo-actuaciones input').forEach(cb => cb.checked = false);
+}
+
+// ==================== IA: OCR + GEMINI ====================
+function toggleAIMethod(method) {
+    document.getElementById('ai-foto').classList.toggle('hidden', method !== 'foto');
+    document.getElementById('ai-texto').classList.toggle('hidden', method !== 'texto');
+}
+
+function cancelarAI(method) {
+    document.getElementById('ai-' + method).classList.add('hidden');
+}
+
+function previewFoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('foto-preview');
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+            document.getElementById('btn-procesar-foto').disabled = false;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+async function procesarFoto() {
+    const fileInput = document.getElementById('foto-input');
+    if (!fileInput.files || !fileInput.files[0]) {
+        toast('Selecciona una imagen primero', 'error');
+        return;
+    }
+
+    const progressDiv = document.getElementById('ocr-progress');
+    const progressFill = document.getElementById('ocr-progress-fill');
+    const statusText = document.getElementById('ocr-status');
+    progressDiv.classList.remove('hidden');
+    document.getElementById('btn-procesar-foto').disabled = true;
+
+    try {
+        statusText.textContent = 'Reconociendo texto (OCR)...';
+        progressFill.style.width = '20%';
+
+        const result = await Tesseract.recognize(
+            fileInput.files[0],
+            'spa',
+            {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        progressFill.style.width = (20 + m.progress * 60) + '%';
+                    }
+                }
+            }
+        );
+
+        const textoOCR = result.data.text;
+        progressFill.style.width = '80%';
+        statusText.textContent = 'Texto reconocido. Analizando con IA...';
+
+        if (!textoOCR.trim()) {
+            toast('No se pudo reconocer texto en la imagen', 'error');
+            progressDiv.classList.add('hidden');
+            document.getElementById('btn-procesar-foto').disabled = false;
+            return;
+        }
+
+        await analizarConGemini(textoOCR);
+        progressFill.style.width = '100%';
+        statusText.textContent = 'Completado';
+        setTimeout(() => progressDiv.classList.add('hidden'), 2000);
+
+    } catch (e) {
+        toast('Error procesando imagen: ' + e.message, 'error');
+        progressDiv.classList.add('hidden');
+    }
+    document.getElementById('btn-procesar-foto').disabled = false;
+}
+
+async function procesarTexto() {
+    const texto = document.getElementById('texto-resumen').value.trim();
+    if (!texto) { toast('Escribe un texto primero', 'error'); return; }
+    await analizarConGemini(texto);
+}
+
+async function analizarConGemini(texto) {
+    if (!CONFIG.geminiKey) {
+        toast('Configura tu API Key de Gemini en Ajustes', 'error');
+        mostrarSeccion('config');
+        return;
+    }
+
+    const centrosLista = centros.map(c => `${c.codigo} - ${c.denominacion} (${c.localidad})`).join('\n');
+
+    const prompt = `Eres un asistente para un asesor de formación del CEP de Córdoba. A partir del siguiente texto (que puede ser notas manuscritas transcritas o un resumen), extrae la información para rellenar un formulario de visita a un centro educativo.
+
+Los centros disponibles son:
+${centrosLista}
+
+Las actuaciones posibles son (selecciona las que apliquen):
+1. Asesoramiento sobre autoevaluación y Plan de Mejora
+2. Elaboración del plan de formación
+3. Detección de necesidades formativas
+4. Seguimiento del plan de formación
+5. Evaluación del plan de formación
+6. Participación en el claustro y/o ETCP
+7. Seguimiento de las actividades de autoformación y/o Programas Educativos
+8. Otros
+
+Responde SOLO con un JSON válido (sin markdown) con esta estructura exacta:
+{
+  "fecha": "YYYY-MM-DD",
+  "codigoCentro": "código del centro o vacío",
+  "resena": "breve reseña de la visita",
+  "actuaciones": ["actuación exacta 1", "actuación exacta 2"],
+  "motivos": "motivos de la visita",
+  "participantes": "participantes",
+  "asuntosTratados": "asuntos tratados",
+  "acuerdos": "acuerdos alcanzados"
+}
+
+Si no puedes determinar algún campo, déjalo como cadena vacía o array vacío.
+Para las actuaciones usa EXACTAMENTE el texto de las opciones listadas arriba.
+Para el código del centro, intenta identificar el centro de la lista por nombre.
+
+TEXTO A ANALIZAR:
+${texto}`;
+
+    try {
+        toast('Analizando con IA...', 'info');
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${CONFIG.geminiKey}`;
+
+        const resp = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.1 }
+            })
+        });
+
+        const data = await resp.json();
+
+        if (data.error) {
+            toast('Error de Gemini: ' + data.error.message, 'error');
+            return;
+        }
+
+        let respText = data.candidates[0].content.parts[0].text;
+        // Limpiar posible markdown
+        respText = respText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+        const campos = JSON.parse(respText);
+        rellenarFormulario(campos);
+        toast('Formulario completado con IA', 'success');
+
+    } catch (e) {
+        toast('Error con IA: ' + e.message, 'error');
+        console.error(e);
+    }
+}
+
+function rellenarFormulario(campos) {
+    if (campos.fecha) document.getElementById('campo-fecha').value = campos.fecha;
+    if (campos.codigoCentro) document.getElementById('campo-centro').value = campos.codigoCentro;
+    if (campos.resena) document.getElementById('campo-resena').value = campos.resena;
+    if (campos.motivos) document.getElementById('campo-motivos').value = campos.motivos;
+    if (campos.participantes) document.getElementById('campo-participantes').value = campos.participantes;
+    if (campos.asuntosTratados) document.getElementById('campo-asuntos').value = campos.asuntosTratados;
+    if (campos.acuerdos) document.getElementById('campo-acuerdos').value = campos.acuerdos;
+
+    // Actuaciones
+    if (campos.actuaciones && Array.isArray(campos.actuaciones)) {
+        document.querySelectorAll('#campo-actuaciones input').forEach(cb => {
+            cb.checked = campos.actuaciones.some(a =>
+                a.toLowerCase().includes(cb.value.toLowerCase().substring(0, 20)) ||
+                cb.value.toLowerCase().includes(a.toLowerCase().substring(0, 20))
+            );
+        });
+    }
+}
+
+// ==================== UI ====================
+function mostrarSeccion(seccion) {
+    document.getElementById('seccion-nueva').classList.toggle('hidden', seccion !== 'nueva');
+    document.getElementById('seccion-listado').classList.toggle('hidden', seccion !== 'listado');
+    document.getElementById('seccion-config').classList.toggle('hidden', seccion !== 'config');
+
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('nav-' + seccion).classList.add('active');
+
+    if (seccion === 'listado') cargarVisitas();
+}
+
+function toast(msg, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+}
+
+// Init
+cargarConfig();
+</script>
+
+</body>
+</html>
