@@ -1,0 +1,13 @@
+DIRECTORIO CEP CÓRDOBA - CÓMO CONTINUAR EN TU ORDENADOR
+
+1. Instala Node.js (https://nodejs.org) si no lo tienes.
+2. Descomprime este zip en una carpeta, por ejemplo:  Documentos\directorio-cep
+3. Abre esa carpeta con Claude Code:
+     - App Claude Desktop > Claude Code > abrir carpeta, o
+     - Terminal dentro de la carpeta:  claude
+4. Escribe:  continúa
+
+Claude tiene en CLAUDE.md todo el contexto y el plan, y en .claude/settings.json
+permiso para editar archivos y ejecutar node, npm, clasp, curl y git en esta carpeta.
+Solo te pedirá ayuda en dos momentos: iniciar sesión en Google (clasp login) y
+pulsar "Ejecutar" en la función setup del editor de Apps Script.

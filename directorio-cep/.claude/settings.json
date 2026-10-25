@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "WebFetch(domain:www.juntadeandalucia.es)",
+      "WebFetch(domain:script.google.com)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(clasp:*)",
+      "Bash(curl:*)",
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(zip:*)",
+      "Bash(tar:*)",
+      "Bash(powershell Compress-Archive:*)"
+    ]
+  }
+}
