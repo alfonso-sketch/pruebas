@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b3a">
+  <title>Directorio CEP Córdoba</title>
+  <meta name="description" content="Agenda compartida del personal de los CEP de Córdoba, Peñarroya-Pueblonuevo y Priego-Montilla.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b6b3a'/%3E%3Ccircle cx='32' cy='25' r='10' fill='white'/%3E%3Cpath d='M14 52c2-10 9-15 18-15s16 5 18 15' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">CEP</span>
+        <div>
+          <h1>Directorio de contactos</h1>
+          <p class="subtitle">Personal de los CEP de la provincia de Córdoba</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn ghost" id="btnExport" type="button" title="Descargar CSV">CSV</button>
+        <button class="btn ghost" id="btnEditMode" type="button" aria-pressed="false">Editar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="toolbar" aria-label="Búsqueda y filtros">
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.2 4.3-1.4 1.4-4.3-4.2A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/></svg>
+        <input id="q" type="search" placeholder="Buscar por nombre, cargo, área, correo o teléfono…" autocomplete="off" aria-label="Buscar">
+      </div>
+      <div class="chips" id="cepChips" role="group" aria-label="Filtrar por CEP"></div>
+      <div class="filters-row">
+        <select id="areaFilter" aria-label="Filtrar por área"><option value="">Todas las áreas</option></select>
+        <span class="count" id="count" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section class="admin-bar" id="adminBar" hidden>
+      <button class="btn primary" id="btnAdd" type="button">+ Añadir contacto</button>
+      <button class="btn" id="btnSync" type="button">Sincronizar con las webs de los CEP</button>
+      <button class="btn ghost" id="btnLogout" type="button">Salir de edición</button>
+    </section>
+
+    <p class="status" id="status" role="status"></p>
+    <div id="list" class="list"></div>
+  </main>
+
+  <footer class="wrap footer">
+    <span id="lastSync"></span>
+    <span>Datos obtenidos de las páginas «Personal del CEP» de la Junta de Andalucía.</span>
+  </footer>
+
+  <dialog id="editDialog">
+    <form method="dialog" id="editForm" class="form">
+      <h2 id="editTitle">Contacto</h2>
+      <input type="hidden" name="id">
+      <label>Nombre *<input name="nombre" required></label>
+      <label>CEP / Organismo<input name="cep" list="cepList"></label>
+      <datalist id="cepList"></datalist>
+      <label>Cargo<input name="cargo"></label>
+      <label>Área<input name="area"></label>
+      <div class="two">
+        <label>Correo<input name="email" type="email"></label>
+        <label>Teléfono<input name="telefono" type="tel"></label>
+      </div>
+      <label>Corporativo<input name="corporativo"></label>
+      <label>Notas<textarea name="notas" rows="3"></textarea></label>
+      <p class="hint" id="autoHint" hidden>Contacto sincronizado automáticamente: solo se guardan las notas.</p>
+      <div class="form-actions">
+        <button class="btn danger" id="btnDelete" type="button" hidden>Eliminar</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn primary" id="btnSave" value="save">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="keyDialog">
+    <form method="dialog" class="form" id="keyForm">
+      <h2>Modo edición</h2>
+      <p>Introduce la clave de edición del directorio.</p>
+      <label>Clave<input name="key" type="password" required autocomplete="current-password"></label>
+      <p class="error" id="keyError"></p>
+      <div class="form-actions">
+        <span class="spacer"></span>
+        <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn primary" value="ok">Entrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="alert" hidden></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
